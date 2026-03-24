@@ -1,0 +1,597 @@
+{
+  "date": "2026-03-24",
+  "failures": [
+    {
+      "timestamp": "2026-03-24T10:18:05",
+      "item_id": "tt11138512",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "The Northman",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/4b9e7bdaeb08",
+          "title": "【高清电影】北欧人 The Northman.1080P完整版"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:08",
+      "item_id": "tt23289160",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Godzilla Minus One",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/7717a56931aa",
+          "title": "《哥斯拉-1.0》[2023][1080p][国英双语][6.5G]"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:10",
+      "item_id": "tt8847712",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "The French Dispatch",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/4a4dfa7eb203",
+          "title": "法兰西特派 The French Dispatch (2021) 1080p 原盘Remux 中文字幕 【24.97GB】已刮削"
+        },
+        {
+          "url": "https://pan.quark.cn/s/7382d962f161",
+          "title": "【高清电影】法兰西特派 The French Dispatch.1080P完整版"
+        },
+        {
+          "url": "https://pan.quark.cn/s/b175fb94788e",
+          "title": "法兰西特派 The French Dispatch (2021)"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:12",
+      "item_id": "tt1489887",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Booksmart",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/682f44dd0e7d",
+          "title": "【影视】高材生 Booksmart (2019) 美国 喜剧"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:14",
+      "item_id": "tt3756036",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Pol",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/c5d9160adfa7",
+          "title": "《东北警察故事3》（2026）【4K 超高清】【内置官方中文字幕】16.1G【谢苗/林晓杰/崔志佳】"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:16",
+      "item_id": "tt35316225",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Pursuit of Jade",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/d602ed5ae585",
+          "title": "逐玉（2026）1080p S01E01 - E15 NF 内封简繁 HiveWeb "
+        },
+        {
+          "url": "https://pan.quark.cn/s/e5b08230d5cb",
+          "title": "逐玉（2026）1080p S01E01 - E21 NF 内封简繁 HiveWeb "
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:17",
+      "item_id": "tt39020004",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Spartacus",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/9ee8d0f42701",
+          "title": "[斯巴达克斯]n.高清无删减全集1080P"
+        },
+        {
+          "url": "https://pan.quark.cn/s/ea45c783bcd3",
+          "title": "斯巴达克斯：亚述家族 (2025) 全10集完结 1080P 中字"
+        },
+        {
+          "url": "https://pan.quark.cn/s/bda33580d9bd",
+          "title": "斯巴达克斯：亚述家族(2025)全10集完结1080P中字"
+        },
+        {
+          "url": "https://pan.quark.cn/s/8c8d3588d2b5",
+          "title": "【电视剧】斯巴达克斯：亚述家族 Spartacus: House Of Ashur 蓝光高清/完整版/1080P/中英字幕"
+        },
+        {
+          "url": "https://pan.quark.cn/s/6c2e2eaed030",
+          "title": "【电视剧】斯巴达克斯 Spartacus：1-3季全+前传 蓝光高清/完整版/1080P/中英字幕"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:20",
+      "item_id": "tt2249364",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Broadchurch",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/060596ccbeff",
+          "title": "【电视剧】小镇疑云 Broadchurch：1-3季全 蓝光高清/完整版/1080P/中英字幕"
+        },
+        {
+          "url": "https://pan.quark.cn/s/10613a9bb3eb",
+          "title": "小镇疑云 Broadchurch：1-3季全"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:26",
+      "item_id": "tt21192142",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "All of Us Strangers",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/be386324caf0",
+          "title": "都是陌生人 All of Us Strangers [2023][剧情 同性 奇幻][生肉]"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:29",
+      "item_id": "tt0947798",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Black Swan",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/d6271769ab1f",
+          "title": "《黑天鹅》[2010][1080p][国英双语][8.1G]"
+        },
+        {
+          "url": "https://pan.quark.cn/s/4d8824cc0953",
+          "title": "【高清电影】黑天鹅 Black Swan.1080P完整版"
+        },
+        {
+          "url": "https://pan.quark.cn/s/6e5b2a4d4512",
+          "title": "黑天鹅 Black Swan (2010)"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:31",
+      "item_id": "tt3661890",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "The Maze Runner",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/274097678a99",
+          "title": "【高清电影】移动迷宫 The Maze Runner：1-3部全.1080P完整版"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:33",
+      "item_id": "tt35855387",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "9-1-1: Nashville",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/0f990b1c953e",
+          "title": "【影视】紧急呼救：纳什维尔.1080P高清.中文字幕.夸克网盘"
+        },
+        {
+          "url": "https://pan.quark.cn/s/8681def79db1",
+          "title": "【电视剧】紧急呼救：纳什维尔 9-1-1: Nashville 蓝光高清/完整版/1080P/中英字幕"
+        },
+        {
+          "url": "https://pan.quark.cn/s/bd832ec95a2f",
+          "title": "【美剧】紧急呼救 衍生剧（2025）"
+        },
+        {
+          "url": "https://pan.quark.cn/s/1292e858ac14",
+          "title": "紧急呼救：纳什维尔9-1-1.Nashville"
+        },
+        {
+          "url": "https://pan.quark.cn/s/8e83194491bd",
+          "title": "【美剧】紧急呼救：纳什维尔9-1-1.Nashville（2025）"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:37",
+      "item_id": "tt0162065",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Angel",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/2c6309355d67",
+          "title": "豆瓣6.5 我的天使 Angel of Mine(2019) 1080P 原盘Remux 中文字幕"
+        },
+        {
+          "url": "https://pan.quark.cn/s/3c8a494e1318",
+          "title": "阿丽塔：战斗天使 Alita: Battle Angel(2019) 豆瓣7.5 4K SDR 中文字幕"
+        },
+        {
+          "url": "https://pan.quark.cn/s/fd3448781a0f",
+          "title": "天使陷落 Angel Has Fallen(2019) 4K HDR 中文字幕"
+        },
+        {
+          "url": "https://pan.quark.cn/s/d3511f33dd17",
+          "title": "阿丽塔：战斗天使 (2019) [4K-HDR] [内封中英字幕] [7.5分]"
+        },
+        {
+          "url": "https://pan.quark.cn/s/95e1e8563e01",
+          "title": "天使轮盘 试玩版（Angel Roulette）免安装中文版"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:39",
+      "item_id": "tt11981644",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Professor T",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/d0e45908c6e9",
+          "title": "T教授 Professor T：1-4季全"
+        },
+        {
+          "url": "https://pan.quark.cn/s/6626588b31a9",
+          "title": "T教授 第三季 Professor T Season 3 (2024)"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:41",
+      "item_id": "tt6294706",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "The Chi",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/89accfd55ae9",
+          "title": "尚气与十环传奇 Shang-Chi and the Legend of the Ten Rings (2021)"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:43",
+      "item_id": "tt4477976",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Superstore",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/04addf7bde2f",
+          "title": "【电视剧】百味超市 Superstore：1-6季全 蓝光高清/完整版/1080P/中英字幕"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:48",
+      "item_id": "tt34664431",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "A Minecraft Movie",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/fc8c6fc87c9d",
+          "title": "标题：我的世界大电影 (A Minecraft Movie)(2025) 4K 2160P WEB-DL 内嵌简繁字幕"
+        },
+        {
+          "url": "https://pan.quark.cn/s/3c50337938de",
+          "title": "我的世界大电影 A Minecraft Movie（2025）4K 杜比视界 [国粤英三语中字】18.5G"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:52",
+      "item_id": "tt7216636",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Hazbin Hotel",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/cf0943dcf1c7",
+          "title": "地狱客栈 第二季 Hazbin Hotel Season 2(2025) 1080P 中文字幕"
+        },
+        {
+          "url": "https://pan.quark.cn/s/8e0b20b12a1a",
+          "title": "地狱客栈（2025）第二季 附第一季 1080P 高码率 内封中文字幕 单集大小2G"
+        },
+        {
+          "url": "https://pan.quark.cn/s/9d7066a570f1 ",
+          "title": "地狱客栈 第二季 Hazbin Hotel Season 2 (2025) 全8集完结 1080P 中字 附第一季"
+        },
+        {
+          "url": "https://pan.quark.cn/s/9d839737177f",
+          "title": "【动漫】地狱客栈 Hazbin Hotel：1-2季[4K高清完整版"
+        },
+        {
+          "url": "https://pan.quark.cn/s/45c07f2315e1",
+          "title": "【新美漫】地狱客栈 第二季 Hazbin Hotel 2 (2025)【附第一季】【收藏持更完结】"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:55",
+      "item_id": "tt13288000",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Napoleon",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/3748003f2c23",
+          "title": "拿破仑[中英特效]Napoleon.2023.BD1080P.X265.10Bit.AC3.DDP5.1.English.PGS-CHS-ENG.JKYY[6.2G]"
+        },
+        {
+          "url": "https://pan.quark.cn/s/f9b563b57307",
+          "title": "拿破仑 Napoleon (2023) 导剪版"
+        },
+        {
+          "url": "https://pan.quark.cn/s/169eb8ecbe25",
+          "title": "拿破仑 Napoleon [2023][俄语原版流媒体][自行翻译"
+        },
+        {
+          "url": "https://pan.quark.cn/s/8b36db7e678e",
+          "title": "拿破仑Napoleon(2023)【电影】【夸克网盘】英国美国/剧情动作传记历史战争冒险/雷德利·斯科特/华金·菲尼克斯凡妮莎·柯比"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:18:58",
+      "item_id": "tt7639064",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Come from Away",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/e822f9fc1526",
+          "title": "来自远方 Come from Away (2021)"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:19:00",
+      "item_id": "tt15940212",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Blitz",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/4bf84d4bf1c6",
+          "title": "【高清电影】闪电战 Blitz.1080P完整版"
+        },
+        {
+          "url": "https://pan.quark.cn/s/738f38427c6f",
+          "title": "纵横命途 v0.14.23（Cross Blitz）免安装中文版"
+        },
+        {
+          "url": "https://pan.quark.cn/s/c648e7505493",
+          "title": "纵横命途 v0.15.1（Cross Blitz）免安装中文版"
+        },
+        {
+          "url": "https://pan.quark.cn/s/c34a000902d3",
+          "title": "【影视】闪电战 Blitz (2024) 历史 / 战争"
+        },
+        {
+          "url": "https://pan.quark.cn/s/3035c5378ea9",
+          "title": "办公室 第七季 2010 / 美国 / 剧情 喜剧 爱情 / Jeffrey Blitz / 史蒂夫·卡瑞尔 雷恩·威尔森"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:19:02",
+      "item_id": "tt35670596",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "KPopped",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/a5dc47d254b2",
+          "title": "kpopped[2025]韩综[完结]"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:19:04",
+      "item_id": "tt21088826",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Criminal Record",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/fe8dc1c432d0",
+          "title": "【夸克网盘】犯罪记录 高清/1080P/中文字幕"
+        },
+        {
+          "url": "https://pan.quark.cn/s/37693b5edc9e",
+          "title": "犯罪记录 Criminal Record [2024] 全 8"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-24T10:19:07",
+      "item_id": "tt6905686",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Lovecraft Country",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/113407e5563b",
+          "title": "恶魔之地 Lovecraft Country(2020) 豆瓣6.8 1080P 中文字幕"
+        },
+        {
+          "url": "https://pan.quark.cn/s/72f5eec02aee",
+          "title": "【电视剧】恶魔之地 Lovecraft Country 蓝光高清/完整版/1080P/中英字幕"
+        },
+        {
+          "url": "https://pan.quark.cn/s/17c9169c8407",
+          "title": "恶魔之地 Lovecraft Country"
+        }
+      ]
+    }
+  ]
+}

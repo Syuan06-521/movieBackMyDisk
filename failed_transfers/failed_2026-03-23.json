@@ -1,0 +1,379 @@
+{
+  "date": "2026-03-23",
+  "failures": [
+    {
+      "timestamp": "2026-03-23T21:41:33",
+      "item_id": "tt4288182",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Atlanta",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/99201b54d188",
+          "title": "爱作战（陈奕迅王志文秦海璐）动作爱情2004夸克网盘影视9个月前"
+        },
+        {
+          "url": "https://pan.quark.cn/s/29f2f682353e",
+          "title": "人人都是AI平面设计师视频课程|夸克网盘资料4个月前"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-23T22:07:48",
+      "item_id": "tt0060550",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "It's the Great Pumpkin, Charlie Brown",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/a440c8aeba11",
+          "title": "5953-守护你直至云开月明（84集）夸克网盘短剧1年前"
+        },
+        {
+          "url": "https://pan.quark.cn/s/e4567c395199",
+          "title": "神探夏洛克 1-4季无删减合集 完整1080P清晰 国英双语音轨 内嵌中英特效硬字幕夸克网盘影视1年前"
+        },
+        {
+          "url": "https://pan.quark.cn/s/e01a2962b4a2",
+          "title": "严总你的小玫瑰又作妖了（77集）王朝阳&amp;杨琳-【短剧】夸克网盘影视3个月前"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-23T22:08:22",
+      "item_id": "tt9663946",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Tenet",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/cca9fa19041a",
+          "title": "信条[杜比视界版本][国语配音+中文字幕].Tenet.2020.2160p.Max.WEB-DL.DDP5.1.H265.DV-ParkHD"
+        },
+        {
+          "url": "https://pan.quark.cn/s/be6d3ded9388",
+          "title": "信条[中英特效字幕]Tenet.2020.IMAX.BD1080P.x265.10bit.AAC.Mandarin&amp;English.JKYY[9.1G]"
+        },
+        {
+          "url": "https://pan.quark.cn/s/4f482dbbd4e2",
+          "title": "【夸克网盘】信条[杜比视界版本][国语配音+中文字幕].Tenet.2020.2160p."
+        },
+        {
+          "url": "https://pan.quark.cn/s/94d553ca2395",
+          "title": "[夸克网盘]信条[杜比视界版本][国语配音+中文字幕].Tenet.2020.2160p..高清完整版"
+        },
+        {
+          "url": "https://pan.quark.cn/s/1994ea310b6f",
+          "title": "[影视][信条TenetMaxWEBDLDDP51H265DVPark][2020][4K][中英双音][简英字幕]"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-23T22:09:51",
+      "item_id": "tt0190713",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "The Shawshank Redemption",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/21c270b05602",
+          "title": "【高清电影】肖申克的救赎 The Shawshank Redemption.1080P完整版"
+        },
+        {
+          "url": "https://pan.quark.cn/s/96d055313cb9",
+          "title": "ID：25270_肖申克的救赎.The Shawshank Redemption.1994.1080p"
+        },
+        {
+          "url": "https://pan.quark.cn/s/a78d39db3b9e",
+          "title": "◆◀▉▉▉▉▉【肖申克的救赎 The Shawshank Redemption (1994)】【1080P+4K】【英语中字】【纯净版】▉▉▉▉▉▶◆"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-23T22:10:23",
+      "item_id": "tt3901856",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Kong: Skull Island",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/6bc69128a968",
+          "title": "金刚：骷髅岛 Kong: Skull Island (2017) 4K/2160p 原盘Remux 中文字幕 【57.09GB】已刮削"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-23T22:11:13",
+      "item_id": "tt1628040",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Godzilla",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/38f3b59ac4c3",
+          "title": "哥斯拉大战金刚[中英特效字幕]Godzilla.vs.Kong.2021.BD1080P.X265.10Bit.AC3.DDP5.1.English&amp;Mandarin.CHS-ENG.JKYY"
+        },
+        {
+          "url": "https://pan.quark.cn/s/363b7fc5de65",
+          "title": "哥斯拉合集Godzilla(2014)1080P多语中字136G"
+        },
+        {
+          "url": "https://pan.baidu.com/s/1GAqeqMwaeDbBRS3txl7kkQ",
+          "title": "哥斯拉大战金刚2：帝国崛起[国英多音轨].Godzilla.x.Kong.The.New.Empire.2024.1080p"
+        },
+        {
+          "url": "https://pan.quark.cn/s/5a0a6ae19b78",
+          "title": "哥斯拉 末世龙战 Godzilla： The Series‎ (1998)"
+        },
+        {
+          "url": "https://pan.quark.cn/s/74704feffc8a",
+          "title": "哥斯拉大战金刚 Godzilla vs Kong‎ (2021)"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-23T22:11:49",
+      "item_id": "tt10095624",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "#DUPE#",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/ed689af83b3c",
+          "title": "孤｜舟.完整高清.1080P夸克网盘影视9个月前"
+        },
+        {
+          "url": "https://pan.quark.cn/s/7142702589c5",
+          "title": "【夸克网盘】我放纵情欲的夜晚 / 我变成野兽的夜晚 / 私が獣になった夜：1-3季全.4K高清.完整版夸克网盘影视2个月前"
+        },
+        {
+          "url": "https://pan.quark.cn/s/71d1ed5f50d7",
+          "title": "2025淘宝全套运营推广现场课程夸克网盘软件1个月前"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-23T22:14:31",
+      "item_id": "tt0032138",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "The Wizard of Oz",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/f558f86fd985",
+          "title": "绿野仙踪 The Wizard of Oz‎ (1939)"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-23T22:16:02",
+      "item_id": "tt5563334",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "The Good Liar",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/5509dae98358",
+          "title": "甜心先生【1996电影.完整版.高清夸克网盘影视10个月前"
+        },
+        {
+          "url": "https://pan.quark.cn/s/b3df5d5492eb",
+          "title": "初中物理夸克网盘影视7个月前"
+        },
+        {
+          "url": "https://pan.quark.cn/s/72b8d1faa84c",
+          "title": "An Ordinary Man (2017)（超清夸克网盘1080P中字）夸克网盘影视5个月前"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-23T23:16:04",
+      "item_id": "tt21192142",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "All of Us Strangers",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/2acc66905fb5",
+          "title": "【高清电影】都是陌生人 All of Us Strangers.1080P完整版"
+        },
+        {
+          "url": "https://pan.quark.cn/s/be386324caf0",
+          "title": "都是陌生人 All of Us Strangers [2023][剧情 同性 奇幻][生肉]"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-23T23:22:30",
+      "item_id": "tt3661890",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "The Maze Runner",
+      "item_type": "movie",
+      "attempted_paths": [
+        "filmTransfer/movies",
+        "filmTransfer_backup/movies",
+        "filmTransfer_alt/movies"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/274097678a99",
+          "title": "【高清电影】移动迷宫 The Maze Runner：1-3部全.1080P完整版"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-23T23:27:37",
+      "item_id": "tt11471892",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Landscapers",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/df4f36a58042",
+          "title": "【影视】园艺杀手.1080P高清.中文字幕.夸克网盘"
+        },
+        {
+          "url": "https://pan.quark.cn/s/b6d07806819f",
+          "title": "【电视剧】园艺杀手 Landscapers 蓝光高清/完整版/1080P/中英字幕"
+        },
+        {
+          "url": "https://pan.quark.cn/s/6cacbc08cf3d",
+          "title": "园艺杀手 Landscapers"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-23T23:41:51",
+      "item_id": "tt23054164",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "Cross",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/869b2658233a",
+          "title": "亚历克斯·克罗斯 第二季 Cross Season 2 (2026) 第1-3集【Amazon版本 4K/HDR 】"
+        },
+        {
+          "url": "https://pan.quark.cn/s/b51746b1c83e",
+          "title": "S《SD高达G世纪：火线纵横（SD Gundam G Generation Cross Rays）》最新 全DLC 豪华 中文版"
+        },
+        {
+          "url": "https://pan.quark.cn/s/738f38427c6f",
+          "title": "纵横命途 v0.14.23（Cross Blitz）免安装中文版"
+        },
+        {
+          "url": "https://pan.quark.cn/s/1675c33f65e9",
+          "title": "《闪亮☆女友》Build17296757（Kira☆Kano）免安装中文版[1.1G]"
+        },
+        {
+          "url": "https://pan.quark.cn/s/c648e7505493",
+          "title": "纵横命途 v0.15.1（Cross Blitz）免安装中文版"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-03-23T23:44:05",
+      "item_id": "tt9471404",
+      "addon_name": "Streaming Catalogs",
+      "item_name": "The Chosen",
+      "item_type": "series",
+      "attempted_paths": [
+        "filmTransfer/series",
+        "filmTransfer_backup/series",
+        "filmTransfer_alt/series"
+      ],
+      "error_reason": "All resources failed (likely invalid share links)",
+      "tried_resources": [
+        {
+          "url": "https://pan.quark.cn/s/70a515643421",
+          "title": "【影视】天选之人.1080P高清.中文字幕.夸克网盘"
+        },
+        {
+          "url": "https://pan.quark.cn/s/957cf4a7af4d",
+          "title": "【电视剧】天选之人 The Chosen One 蓝光高清/完整版/1080P/中英字幕"
+        },
+        {
+          "url": "https://pan.quark.cn/s/28cc6a8910ab",
+          "title": "【动漫】谷围南亭 The Chosen One[4K高清完整版"
+        },
+        {
+          "url": "https://pan.quark.cn/s/2fe4fe267a97",
+          "title": "拣选 The Chosen（全季）"
+        }
+      ]
+    }
+  ]
+}

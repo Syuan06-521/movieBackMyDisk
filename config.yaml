@@ -1,0 +1,77 @@
+# filmTransfer 配置文件
+
+# 运行模式:
+#   - auto: 全自动模式，自动搜索并转存到夸克网盘（默认）
+#   - semi-auto: 半自动模式，搜索结果保存到 Excel 文件，手动处理
+mode: "auto"
+
+# Stremio 插件配置 (可添加多个)
+stremio_addons:
+  - name: "Netflix Catalog"
+    manifest_url: "https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club/bmZ4LGRucCxhbXAsYXRwLGhibTo6SEs6MTc3MTgzNjQ3NDg3NzowOjA6SEs%3D/manifest.json"
+    enabled: true
+    # 只监控指定类型，留空则全部监控
+    watch_types: ["movie", "series"]
+    # 只监控指定catalog id，留空则全部监控
+    watch_catalogs: []
+
+# 检查间隔（分钟）
+check_interval_minutes: 60
+
+# 夸克网盘配置
+quark:
+  # Cookie 字符串（从浏览器开发者工具 -> Application -> Cookies -> pan.quark.cn 复制）
+  cookie: "your cookie"
+  # 保存目标文件夹列表（按优先级排序，主路径在前，备用路径在后）
+  save_folders:
+    - "filmTransfer"           # 主路径
+    - "filmTransfer_backup"    # 备用路径 1
+    - "filmTransfer_alt"       # 备用路径 2
+  # 是否自动创建目标文件夹（若不存在）
+  auto_create_folder: true
+
+# 资源筛选配置
+filter:
+  # 优选分辨率（优先级从高到低）
+  preferred_resolutions:
+    - "2160p"   # 4K
+    - "1080p"
+    - "720p"
+  # 最低可接受分辨率
+  min_resolution: "720p"
+  # 文件大小范围（GB），留空不限制
+  min_size_gb: 0.5
+  max_size_gb: 60.0
+  # 优选视频编码
+  preferred_codecs:
+    - "HEVC"
+    - "H265"
+    - "H264"
+    - "AVC"
+  # 优先选字幕语言（若资源携带字幕信息）
+  prefer_languages:
+    - "中文"
+    - "国语"
+    - "普通话"
+
+# 资源搜索站点配置
+search_sites:
+  # 每个站点最多抓取结果数
+  max_results_per_site: 15
+
+# 日志配置
+logging:
+  level: "INFO"          # DEBUG / INFO / WARNING / ERROR
+  file: "logs/filmTransfer.log"
+  max_bytes: 10485760    # 10MB
+  backup_count: 5
+
+# 通知配置（可选）
+notification:
+  enabled: false
+  # 支持: bark / dingtalk / telegram / webhook
+  type: "bark"
+  bark_key: ""
+  dingtalk_webhook: ""
+  telegram_bot_token: ""
+  telegram_chat_id: ""
