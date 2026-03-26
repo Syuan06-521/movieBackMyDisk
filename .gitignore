@@ -41,9 +41,9 @@ ENV/
 .env.local
 
 # Database
-*.db
-*.sqlite
-*.sqlite3
+#*.db
+#*.sqlite
+#*.sqlite3
 
 # Logs
 logs/
