@@ -61,13 +61,39 @@ class TransferPipeline:
 
         # Step 1: 检查所有 addon，发现新内容
         new_items = self._discover_new_items()
-        if not new_items:
-            logger.info("No new items to process")
+
+        # Step 2: 获取数据库中已有的 pending 任务
+        pending_items = TaskDB.get_pending_tasks_with_details()
+        logger.info("Found %d new items, %d pending tasks in database",
+                   len(new_items), len(pending_items))
+
+        # Step 3: 合并任务（去重，避免重复处理）
+        seen_ids = set()
+        all_items = []
+        # 先添加新任务
+        for item in new_items:
+            item_id = item.get("id")
+            addon = item.get("_addon")
+            key = (item_id, addon)
+            if key not in seen_ids:
+                seen_ids.add(key)
+                all_items.append(item)
+        # 再添加 pending 任务（跳过已在新任务中的）
+        for item in pending_items:
+            item_id = item.get("id")
+            addon = item.get("_addon")
+            key = (item_id, addon)
+            if key not in seen_ids:
+                seen_ids.add(key)
+                all_items.append(item)
+
+        if not all_items:
+            logger.info("No items to process")
             return
 
-        # Step 2: 处理每个新条目
+        # Step 4: 处理每个条目
         stats = {"found": 0, "saved": 0, "skipped": 0, "failed": 0}
-        for item_info in new_items:
+        for item_info in all_items:
             result = self._process_item(item_info)
             stats[result] = stats.get(result, 0) + 1
 

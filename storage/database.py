@@ -75,9 +75,23 @@ def init_db():
 class CatalogDB:
     """目录条目的增删查"""
 
-    @staticmethod
-    def exists(item_id: str, addon_name: str) -> bool:
-        conn = get_connection()
+    def __init__(self):
+        self.conn = None
+
+    def __enter__(self):
+        self.conn = get_connection()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.conn:
+            self.conn.close()
+
+    def close(self):
+        if self.conn:
+            self.conn.close()
+
+    def exists(self, item_id: str, addon_name: str) -> bool:
+        conn = self.conn if self.conn else get_connection()
         try:
             cur = conn.execute(
                 "SELECT 1 FROM catalog_items WHERE id=? AND addon_name=?",
@@ -85,11 +99,11 @@ class CatalogDB:
             )
             return cur.fetchone() is not None
         finally:
-            conn.close()
+            if not self.conn:
+                conn.close()
 
-    @staticmethod
-    def insert(item: Dict[str, Any], addon_name: str):
-        conn = get_connection()
+    def insert(self, item: Dict[str, Any], addon_name: str):
+        conn = self.conn if self.conn else get_connection()
         try:
             with conn:
                 conn.execute("""
@@ -104,11 +118,11 @@ class CatalogDB:
                     datetime.now().isoformat()
                 ))
         finally:
-            conn.close()
+            if not self.conn:
+                conn.close()
 
-    @staticmethod
-    def get_all(addon_name: Optional[str] = None) -> List[Dict]:
-        conn = get_connection()
+    def get_all(self, addon_name: Optional[str] = None) -> List[Dict]:
+        conn = self.conn if self.conn else get_connection()
         try:
             if addon_name:
                 cur = conn.execute(
@@ -121,16 +135,31 @@ class CatalogDB:
                 )
             return [dict(row) for row in cur.fetchall()]
         finally:
-            conn.close()
+            if not self.conn:
+                conn.close()
 
 
 class TaskDB:
     """转存任务的增删查改"""
 
-    @staticmethod
-    def has_pending_or_done(item_id: str, addon_name: str) -> bool:
+    def __init__(self):
+        self.conn = None
+
+    def __enter__(self):
+        self.conn = get_connection()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.conn:
+            self.conn.close()
+
+    def close(self):
+        if self.conn:
+            self.conn.close()
+
+    def has_pending_or_done(self, item_id: str, addon_name: str) -> bool:
         """检查是否已有任务（避免重复处理）"""
-        conn = get_connection()
+        conn = self.conn if self.conn else get_connection()
         try:
             cur = conn.execute(
                 """SELECT 1 FROM transfer_tasks
@@ -140,12 +169,12 @@ class TaskDB:
             )
             return cur.fetchone() is not None
         finally:
-            conn.close()
+            if not self.conn:
+                conn.close()
 
-    @staticmethod
-    def create(item_id: str, addon_name: str) -> int:
+    def create(self, item_id: str, addon_name: str) -> int:
         now = datetime.now().isoformat()
-        conn = get_connection()
+        conn = self.conn if self.conn else get_connection()
         try:
             with conn:
                 cur = conn.execute(
@@ -156,27 +185,27 @@ class TaskDB:
                 )
                 return cur.lastrowid
         finally:
-            conn.close()
+            if not self.conn:
+                conn.close()
 
-    @staticmethod
-    def update(task_id: int, **kwargs):
+    def update(self, task_id: int, **kwargs):
         if not kwargs:
             return
         kwargs["updated_at"] = datetime.now().isoformat()
         cols = ", ".join(f"{k}=?" for k in kwargs)
         vals = list(kwargs.values()) + [task_id]
-        conn = get_connection()
+        conn = self.conn if self.conn else get_connection()
         try:
             with conn:
                 conn.execute(
                     f"UPDATE transfer_tasks SET {cols} WHERE task_id=?", vals
                 )
         finally:
-            conn.close()
+            if not self.conn:
+                conn.close()
 
-    @staticmethod
-    def get_by_status(status: str) -> List[Dict]:
-        conn = get_connection()
+    def get_by_status(self, status: str) -> List[Dict]:
+        conn = self.conn if self.conn else get_connection()
         try:
             cur = conn.execute(
                 "SELECT * FROM transfer_tasks WHERE status=? ORDER BY created_at",
@@ -184,15 +213,58 @@ class TaskDB:
             )
             return [dict(row) for row in cur.fetchall()]
         finally:
-            conn.close()
+            if not self.conn:
+                conn.close()
 
-    @staticmethod
-    def get_stats() -> Dict[str, int]:
-        conn = get_connection()
+    def get_stats(self) -> Dict[str, int]:
+        conn = self.conn if self.conn else get_connection()
         try:
             cur = conn.execute(
                 "SELECT status, COUNT(*) as cnt FROM transfer_tasks GROUP BY status"
             )
             return {row["status"]: row["cnt"] for row in cur.fetchall()}
         finally:
-            conn.close()
+            if not self.conn:
+                conn.close()
+
+    def get_pending_tasks_with_details(self) -> List[Dict]:
+        """获取所有 pending 任务，并关联 catalog_items 获取完整信息"""
+        conn = self.conn if self.conn else get_connection()
+        try:
+            cur = conn.execute("""
+                SELECT t.*, c.item_type, c.name, c.year, c.imdb_id, c.poster, c.raw_meta
+                FROM transfer_tasks t
+                JOIN catalog_items c ON t.catalog_item_id = c.id AND t.addon_name = c.addon_name
+                WHERE t.status = 'pending'
+                ORDER BY t.created_at
+            """)
+            tasks = []
+            for row in cur.fetchall():
+                row_dict = dict(row)
+                # 解析 raw_meta
+                try:
+                    raw_meta = json.loads(row_dict.get("raw_meta", "{}"))
+                except json.JSONDecodeError:
+                    raw_meta = {}
+                # 构造和 _discover_new_items 返回格式一致的字典
+                task = {
+                    **raw_meta,
+                    "id": row_dict["catalog_item_id"],
+                    "type": row_dict["item_type"],
+                    "name": row_dict["name"],
+                    "year": row_dict["year"],
+                    "imdbId": row_dict["imdb_id"],
+                    "poster": row_dict["poster"],
+                    "_task_id": row_dict["task_id"],
+                    "_addon": row_dict["addon_name"],
+                }
+                tasks.append(task)
+            return tasks
+        finally:
+            if not self.conn:
+                conn.close()
+
+
+# 别名兼容
+TaskDBv2 = TaskDB
+CatalogDBv2 = CatalogDB
