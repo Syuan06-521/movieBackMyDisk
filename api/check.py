@@ -22,18 +22,12 @@ check_bp = Blueprint('check', __name__)
 # 全局任务状态（简单实现，生产环境建议使用 Redis 或数据库）
 running_tasks = {}
 task_logs = {}  # 存储每个任务的执行日志
-task_stop_flags = {}  # 存储每个任务的停止标志
 
 logger = logging.getLogger(__name__)
 
 
 def _progress_callback(task_id: str, status: str, progress: int, message: str, current_item: str = ""):
     """进度回调函数"""
-    # 检查是否有停止标志
-    if task_id in task_stop_flags and task_stop_flags[task_id]:
-        logger.info(f"Task {task_id} received stop signal")
-        return
-
     if task_id in running_tasks:
         running_tasks[task_id].update({
             'status': status,
@@ -48,11 +42,6 @@ def _progress_callback(task_id: str, status: str, progress: int, message: str, c
     if task_id not in task_logs:
         task_logs[task_id] = []
     task_logs[task_id].append(log_entry)
-
-
-def _should_stop(task_id: str) -> bool:
-    """检查任务是否应该停止"""
-    return task_stop_flags.get(task_id, False)
 
 
 @check_bp.route('', methods=['POST'])
@@ -105,7 +94,6 @@ def run_check():
             try:
                 running_tasks[task_id] = {'status': 'running', 'progress': 0, 'message': '正在初始化...'}
                 task_logs[task_id] = ['任务已启动']
-                task_stop_flags[task_id] = False  # 初始化停止标志
 
                 # 构建配置
                 config = {
@@ -123,34 +111,23 @@ def run_check():
                         addon['watch_types'] = [content_type]
 
                 # 设置进度回调
-                from pipeline import set_progress_callback, _report_progress, set_should_stop_callback
+                from pipeline import set_progress_callback, _report_progress
                 set_progress_callback(lambda status, progress, message, current_item="":
                     _progress_callback(task_id, status, progress, message, current_item))
-                # 设置停止标志检查回调
-                set_should_stop_callback(lambda: _should_stop(task_id))
 
                 # 报告初始化完成
                 _report_progress("running", 0, "正在执行检查...")
 
                 # 执行检查
                 pipeline = TransferPipeline(config)
-                pipeline.run_once(content_type)
+                pipeline.run_once()
 
-                # 检查是否被停止
-                if task_stop_flags.get(task_id, False):
-                    running_tasks[task_id] = {
-                        'status': 'stopped',
-                        'progress': running_tasks[task_id].get('progress', 0),
-                        'message': '任务已被用户停止'
-                    }
-                    task_logs[task_id].append("任务已被用户停止")
-                else:
-                    running_tasks[task_id] = {
-                        'status': 'completed',
-                        'progress': 100,
-                        'message': '检查完成'
-                    }
-                    task_logs[task_id].append("检查完成")
+                running_tasks[task_id] = {
+                    'status': 'completed',
+                    'progress': 100,
+                    'message': '检查完成'
+                }
+                task_logs[task_id].append("检查完成")
             except Exception as e:
                 running_tasks[task_id] = {
                     'status': 'failed',
@@ -159,10 +136,6 @@ def run_check():
                 logger.error(f'Check task failed: {e}', exc_info=True)
                 if task_id in task_logs:
                     task_logs[task_id].append(f"错误：{str(e)}")
-            finally:
-                # 清理停止标志
-                if task_id in task_stop_flags:
-                    del task_stop_flags[task_id]
 
         # 在后台线程中运行
         thread = threading.Thread(target=run_task)
@@ -212,55 +185,6 @@ def get_run_modes():
             {'value': 'semi-auto', 'label': '半自动模式', 'description': '搜索结果保存到 Excel，手动处理'}
         ],
         'current_mode': settings.mode
-    }), 200
-
-
-@check_bp.route('/stop/<task_id>', methods=['POST'])
-@jwt_required()
-def stop_task(task_id):
-    """停止正在执行的任务"""
-    from storage.repositories import OperationLogRepository
-    from flask_jwt_extended import get_jwt_identity
-
-    task = running_tasks.get(task_id)
-
-    if not task:
-        return jsonify({
-            'error': 'not_found',
-            'message': '任务不存在或已完成'
-        }), 404
-
-    if task.get('status') not in ['running', 'queued']:
-        return jsonify({
-            'error': 'invalid_status',
-            'message': f'任务状态为 {task.get("status")}，无法停止'
-        }), 400
-
-    # 设置停止标志
-    task_stop_flags[task_id] = True
-
-    # 立即更新任务状态为 stopping，让前端可以显示停止中状态
-    running_tasks[task_id]['status'] = 'stopping'
-    running_tasks[task_id]['message'] = '正在停止任务，等待当前操作完成...'
-
-    db = next(get_db())
-    try:
-        log_repo = OperationLogRepository(db)
-        current_user_id = get_jwt_identity()
-
-        # 记录操作日志
-        log_repo.create(
-            user_id=int(current_user_id),
-            action='stop_task',
-            details={'task_id': task_id},
-            status='success'
-        )
-    finally:
-        db.close()
-
-    return jsonify({
-        'message': '任务停止信号已发送，等待当前操作完成后退出...',
-        'task_id': task_id
     }), 200
 
 

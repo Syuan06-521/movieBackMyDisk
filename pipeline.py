@@ -9,9 +9,13 @@ pipeline.py - 核心处理流水线
   - 支持多备用转存路径
   - 同步历史记录检查，避免重复保存
   - 失败记录到文件
+
+优化 (2026-03-25):
+  - 支持处理数据库中已有的 pending 任务
+  - 增加进度追踪回调
 """
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Callable
 from datetime import datetime
 
 from stremio.tracker import CatalogTracker
@@ -19,10 +23,44 @@ from searcher.quark_search import AggregatedSearcher
 from searcher.filter import ResourceFilter
 from searcher.models import ResourceResult
 from quark.client import QuarkClient, QuarkError
-from storage.database import TaskDB
+from storage.database import TaskDB, TaskDBv2
 from storage.sync_history import SyncHistory
+from storage.repositories import TaskRepository, CatalogRepository
 
 logger = logging.getLogger(__name__)
+
+
+# 全局停止标志检查函数（由 check.py 设置）
+_should_stop_callback: Optional[Callable] = None
+
+
+def set_should_stop_callback(callback: Callable):
+    """设置停止标志检查回调函数"""
+    global _should_stop_callback
+    _should_stop_callback = callback
+
+
+def _should_stop() -> bool:
+    """检查是否应该停止执行"""
+    if _should_stop_callback:
+        return _should_stop_callback()
+    return False
+
+
+# 全局进度回调
+_progress_callback: Optional[Callable] = None
+
+
+def set_progress_callback(callback: Callable):
+    """设置进度回调函数"""
+    global _progress_callback
+    _progress_callback = callback
+
+
+def _report_progress(status: str, progress: int = 0, message: str = "", current_item: str = ""):
+    """报告进度"""
+    if _progress_callback:
+        _progress_callback(status=status, progress=progress, message=message, current_item=current_item)
 
 
 class TransferPipeline:
@@ -53,58 +91,238 @@ class TransferPipeline:
         self.searcher = AggregatedSearcher(self.site_config)
         self.resource_filter = ResourceFilter(self.filter_config)
 
-    def run_once(self):
-        """执行一次完整的检查和处理流程"""
+    def run_once(self, content_type: str = None):
+        """执行一次完整的检查和处理流程
+
+        Args:
+            content_type: 内容类型过滤 ('movie' 或 'series')
+        """
         logger.info("=" * 60)
         logger.info("Pipeline run started (mode: %s)", self.mode)
         logger.info("Save folders configured: %s", self.save_folders)
 
-        # Step 1: 检查所有 addon，发现新内容
-        new_items = self._discover_new_items()
+        # Step 0: 先处理数据库中已有的 pending 任务
+        pending_tasks_processed = self._process_pending_tasks(content_type)
 
-        # Step 2: 获取数据库中已有的 pending 任务
-        pending_items = TaskDB.get_pending_tasks_with_details()
-        logger.info("Found %d new items, %d pending tasks in database",
-                   len(new_items), len(pending_items))
-
-        # Step 3: 合并任务（去重，避免重复处理）
-        seen_ids = set()
-        all_items = []
-        # 先添加新任务
-        for item in new_items:
-            item_id = item.get("id")
-            addon = item.get("_addon")
-            key = (item_id, addon)
-            if key not in seen_ids:
-                seen_ids.add(key)
-                all_items.append(item)
-        # 再添加 pending 任务（跳过已在新任务中的）
-        for item in pending_items:
-            item_id = item.get("id")
-            addon = item.get("_addon")
-            key = (item_id, addon)
-            if key not in seen_ids:
-                seen_ids.add(key)
-                all_items.append(item)
-
-        if not all_items:
-            logger.info("No items to process")
+        # 检查是否被停止
+        if _should_stop():
+            logger.info("Pipeline stopped by user after processing pending tasks")
+            _report_progress("stopped", 0, "任务已被用户停止")
             return
 
-        # Step 4: 处理每个条目
-        stats = {"found": 0, "saved": 0, "skipped": 0, "failed": 0}
-        for item_info in all_items:
-            result = self._process_item(item_info)
-            stats[result] = stats.get(result, 0) + 1
+        # Step 1: 检查所有 addon，发现新内容
+        new_items = self._discover_new_items()
+        if not new_items:
+            logger.info("No new items to process")
+            _report_progress("running", 0, "无新发现影视内容")
+        else:
+            # Step 2: 处理每个新条目
+            stats = {"found": 0, "saved": 0, "skipped": 0, "failed": 0}
+            for idx, item_info in enumerate(new_items):
+                # 检查是否被停止
+                if _should_stop():
+                    logger.info("Pipeline stopped by user while processing items")
+                    _report_progress("stopped", int((idx + 1) / len(new_items) * 100), f"任务已被用户停止 (已处理 {idx}/{len(new_items)})")
+                    break
 
-        logger.info(
-            "Pipeline run completed: found=%d saved=%d skipped=%d failed=%d",
-            stats["found"], stats["saved"], stats["skipped"], stats["failed"]
-        )
+                # 报告进度
+                progress = int((idx + 1) / len(new_items) * 100)
+                item_name = item_info.get("name", item_info.get("id", ""))
+                _report_progress(
+                    "running",
+                    progress,
+                    f"正在处理新发现影视 {idx + 1}/{len(new_items)} - {item_name[:50]}",
+                    f"ID: {item_info.get('id', '')}"
+                )
 
-        # 通知
-        if stats["saved"] > 0:
-            self._notify(f"filmTransfer: 本次新保存 {stats['saved']} 个资源")
+                result = self._process_item(item_info)
+                stats[result] = stats.get(result, 0) + 1
+
+                # 报告单个处理完成状态
+                status_msg = {"saved": "已保存", "skipped": "已跳过", "failed": "失败", "found": "已找到"}.get(result, result)
+                _report_progress(
+                    "running",
+                    progress,
+                    f"影视 {idx + 1}/{len(new_items)} 处理完成 - {status_msg}",
+                    f"ID: {item_info.get('id', '')}"
+                )
+
+            # 如果不是因为停止而退出，记录完成日志
+            if not _should_stop():
+                logger.info(
+                    "Pipeline run completed: found=%d saved=%d skipped=%d failed=%d",
+                    stats["found"], stats["saved"], stats["skipped"], stats["failed"]
+                )
+
+                # 通知
+                if stats["saved"] > 0:
+                    self._notify(f"filmTransfer: 本次新保存 {stats['saved']} 个资源")
+                    _report_progress(
+                        "completed",
+                        100,
+                        f"新发现影视处理完成 - 共{len(new_items)}个，成功{stats['saved']}个，跳过{stats['skipped']}个，失败{stats['failed']}个"
+                    )
+                else:
+                    _report_progress(
+                        "completed",
+                        100,
+                        f"新发现影视处理完成 - 共{len(new_items)}个，成功{stats['saved']}个，跳过{stats['skipped']}个，失败{stats['failed']}个"
+                    )
+
+        # 汇总结果
+        if pending_tasks_processed == 0 and not new_items:
+            logger.info("本次检查无更新内容（无待处理任务，无新发现影视）")
+            _report_progress("completed", 100, "本次检查无更新内容")
+        elif pending_tasks_processed > 0 and not new_items:
+            # 只处理了 pending 任务，没有新发现
+            pass  # 已在 _process_pending_tasks 中报告完成
+
+    def _process_pending_tasks(self, content_type: str = None) -> int:
+        """
+        处理数据库中已有的 pending 任务
+
+        Args:
+            content_type: 内容类型过滤
+
+        Returns:
+            处理的任务数量
+        """
+        db = TaskDBv2()
+        try:
+            # 只处理 pending 任务，失败任务需要用户手动重试
+            pending_tasks = db.get_all(status='pending')
+
+            # 按类型过滤
+            if content_type:
+                # 需要获取 catalog 信息来过滤
+                filtered_tasks = []
+                for task in pending_tasks:
+                    # 这里简单处理，实际需要关联 catalog
+                    filtered_tasks.append(task)
+                pending_tasks = filtered_tasks
+
+            if not pending_tasks:
+                logger.info("No pending tasks to process")
+                return 0
+
+            logger.info("=" * 50)
+            logger.info("Starting to process %d pending tasks...", len(pending_tasks))
+            logger.info("=" * 50)
+
+            _report_progress("running", 0, f"发现 {len(pending_tasks)} 个待处理任务")
+
+            # 处理每个待处理任务
+            stats = {"found": 0, "saved": 0, "skipped": 0, "failed": 0}
+            for idx, task_data in enumerate(pending_tasks):
+                task_id = task_data.get('task_id')
+                catalog_item_id = task_data.get('catalog_item_id')
+                addon_name = task_data.get('addon_name')
+
+                logger.info("-" * 40)
+                logger.info("[%d/%d] Processing task %s, catalog %s",
+                           idx + 1, len(pending_tasks), task_id, catalog_item_id)
+
+                # 报告进度
+                progress = int((idx + 1) / len(pending_tasks) * 100)
+                _report_progress(
+                    "running",
+                    progress,
+                    f"正在处理待处理任务 {idx + 1}/{len(pending_tasks)}",
+                    f"ID: {catalog_item_id}"
+                )
+
+                # 重新处理任务
+                try:
+                    result = self._process_task(task_id)
+                    stats[result] = stats.get(result, 0) + 1
+                    logger.info("[%d/%d] Task %s completed with result: %s",
+                               idx + 1, len(pending_tasks), task_id, result)
+
+                    # 报告单个任务完成状态
+                    status_msg = {"saved": "已保存", "skipped": "已跳过", "failed": "失败", "found": "已找到"}.get(result, result)
+                    _report_progress(
+                        "running",
+                        progress,
+                        f"任务 {idx + 1}/{len(pending_tasks)} 处理完成 - {status_msg}",
+                        f"ID: {catalog_item_id}"
+                    )
+                except Exception as e:
+                    logger.error("Failed to process pending task %s: %s", task_id, e, exc_info=True)
+                    db.update(task_id, status='failed', error_msg=str(e))
+                    stats["failed"] += 1
+                    _report_progress(
+                        "running",
+                        progress,
+                        f"任务 {idx + 1}/{len(pending_tasks)} 处理失败 - {str(e)}",
+                        f"ID: {catalog_item_id}"
+                    )
+
+            logger.info("=" * 50)
+            logger.info("Pending tasks processing completed:")
+            logger.info("  Total: %d, Saved: %d, Skipped: %d, Failed: %d",
+                       len(pending_tasks), stats["saved"], stats["skipped"], stats["failed"])
+            logger.info("=" * 50)
+
+            # 所有任务处理完成
+            _report_progress(
+                "completed",
+                100,
+                f"待处理任务处理完成 - 共{len(pending_tasks)}个，成功{stats['saved']}个，跳过{stats['skipped']}个，失败{stats['failed']}个"
+            )
+
+            return len(pending_tasks)
+        finally:
+            db.close()
+
+    def _process_task(self, task_id: int) -> str:
+        """
+        处理单个待处理任务
+        从任务中获取影视信息，然后执行搜索和保存
+
+        Args:
+            task_id: 任务 ID
+
+        Returns:
+            状态字符串：found/saved/skipped/failed
+        """
+        from storage.database import CatalogDBv2
+
+        db = TaskDBv2()
+        catalog_db = CatalogDBv2()
+        try:
+            # 获取任务
+            task_repo = TaskRepository(db.db)
+            task = task_repo.get_by_id(task_id)
+            if not task:
+                logger.warning("Task %s not found", task_id)
+                return "failed"
+
+            # 获取 catalog 信息
+            catalog_repo = CatalogRepository(catalog_db.db)
+            catalog_item = catalog_repo.get_by_id(task.catalog_item_id, task.addon_name)
+            if not catalog_item:
+                logger.warning("Catalog item %s/%s not found", task.catalog_item_id, task.addon_name)
+                return "skipped"
+
+            # 重建 item 数据结构
+            item = {
+                "id": catalog_item.id,
+                "name": catalog_item.name,
+                "type": catalog_item.item_type,
+                "year": catalog_item.year,
+                "imdbId": catalog_item.imdb_id,
+                "poster": catalog_item.poster,
+                "_task_id": task_id,
+                "_addon": task.addon_name,
+                "_skip_sync_check": True,  # 标记跳过同步历史检查（待处理任务需要重新处理）
+            }
+
+            # 调用 _process_item 处理
+            return self._process_item(item)
+        finally:
+            db.close()
+            catalog_db.close()
+            catalog_db.close()
 
     def _discover_new_items(self) -> List[Dict]:
         """从所有 addon 发现新内容"""
@@ -131,11 +349,12 @@ class TransferPipeline:
         item_type = item.get("type", "")
         task_id = item.get("_task_id")
         addon_name = item.get("_addon", "")
+        skip_sync_check = item.get("_skip_sync_check", False)  # 待处理任务跳过同步检查
 
         logger.info("Processing: [%s] %s", item_id, item_name)
 
-        # Step 0: 检查同步历史，避免重复保存
-        if self.sync_history.is_synced(item_id, addon_name):
+        # Step 0: 检查同步历史，避免重复保存（待处理任务跳过此检查）
+        if not skip_sync_check and self.sync_history.is_synced(item_id, addon_name):
             logger.info("Already synced (historical record exists), skipping: %s", item_name)
             return "skipped"
 
@@ -218,6 +437,7 @@ class TransferPipeline:
         max_attempts = min(len(ranked_results), 5)  # 最多尝试 5 个资源
         attempted_paths = []
         tried_resources = []
+        failure_details = []  # 记录每个资源的失败原因
 
         for resource_idx, resource in enumerate(ranked_results[:max_attempts]):
             logger.info("Resource attempt %d/%d: %s",
@@ -249,9 +469,22 @@ class TransferPipeline:
                     logger.error("Quark save error for '%s' on path '%s': %s",
                                 item_name, save_path, e)
                     success = False
+                    failure_details.append({
+                        "resource": resource.share_url,
+                        "path": save_path,
+                        "error": str(e)
+                    })
 
                 if success:
                     logger.info("Saved '%s' -> %s", item_name, save_path)
+
+                    # 记录到 catalog_items 表（已同步完成的项目）
+                    from storage.database import CatalogDBv2
+                    catalog_db = CatalogDBv2()
+                    try:
+                        catalog_db.insert(item, addon_name)
+                    finally:
+                        catalog_db.close()
 
                     # 更新任务状态
                     if task_id:
@@ -279,6 +512,11 @@ class TransferPipeline:
                 else:
                     logger.warning("Resource failed on path '%s': %s",
                                   save_path, resource.share_url)
+                    failure_details.append({
+                        "resource": resource.share_url,
+                        "path": save_path,
+                        "error": "Save returned False"
+                    })
 
             # 当前资源在所有路径上都失败，继续尝试下一个资源
             if resource_idx < max_attempts - 1:
@@ -288,9 +526,12 @@ class TransferPipeline:
         # 所有尝试都失败
         logger.error("All resources and paths failed for: %s", item_name)
 
+        # 分析失败原因
+        failure_reason = self._analyze_failure(failure_details, tried_resources)
+
         if task_id:
             TaskDB.update(task_id, status="failed",
-                          error_msg=f"All {max_attempts} resources on all paths failed")
+                          error_msg=failure_reason)
 
         # 记录失败到文件
         self.sync_history.record_failure(
@@ -299,11 +540,43 @@ class TransferPipeline:
             item_name=item_name,
             item_type=item_type,
             attempted_paths=attempted_paths,
-            error_reason="All resources failed (likely invalid share links)",
+            error_reason=failure_reason,
             tried_resources=tried_resources,
         )
 
         return "failed"
+
+    def _analyze_failure(self, failure_details: List[Dict], tried_resources: List[Dict]) -> str:
+        """
+        分析失败原因，返回详细的错误信息
+
+        Args:
+            failure_details: 失败详情列表
+            tried_resources: 尝试过的资源列表
+
+        Returns:
+            失败原因字符串
+        """
+        if not failure_details:
+            return "未知错误，未记录到失败详情"
+
+        # 检查是否有分享链接失效的错误
+        link_invalid_keywords = ["分享已失效", "链接不存在", "文件已删除", "分享已删除", "资源不存在", "无法访问"]
+        for detail in failure_details:
+            error_msg = detail.get("error", "")
+            if any(keyword in error_msg for keyword in link_invalid_keywords):
+                # 返回第一个失效的链接
+                return f"分享链接失效：{detail.get('resource', '未知链接')}"
+
+        # 如果是浏览器自动化问题
+        browser_keywords = ["浏览器", "Playwright", "timeout", "超时", "Cannot find save button"]
+        for detail in failure_details:
+            error_msg = detail.get("error", "")
+            if any(keyword in error_msg for keyword in browser_keywords):
+                return f"浏览器自动化失败：{error_msg[:100]}"
+
+        # 默认返回通用错误信息
+        return f"所有 {len(tried_resources)} 个资源都尝试失败，请检查分享链接是否有效"
 
     def _save_to_excel(self, item: Dict, ranked_results: List[ResourceResult],
                        task_id: Optional[str] = None) -> str:
@@ -362,23 +635,8 @@ class TransferPipeline:
         df.to_excel(excel_path, index=False, engine="openpyxl")
         logger.info("Saved %d resources to %s for manual processing", len(records), excel_path)
 
-        # 记录同步历史 (标记为半自动待处理)
-        base_save_folder = self.save_folders[0] if self.save_folders else "filmTransfer"
-        save_path = self._build_save_path(item, base_save_folder)
-
-        self.sync_history.record_sync(
-            item_id=item_id,
-            addon_name=addon_name,
-            item_name=item_name,
-            item_type=item_type,
-            resource_title=ranked_results[0].title if ranked_results else "",
-            resource_url=ranked_results[0].share_url if ranked_results else "",
-            save_path=save_path,
-            status="pending_manual",
-            resolution=ranked_results[0].resolution if ranked_results else None,
-            size_gb=ranked_results[0].size_gb if ranked_results else None,
-            codec=ranked_results[0].codec if ranked_results else None,
-        )
+        # 半自动模式不记录同步历史（因为还没有真正转存）
+        # 只在用户手动处理或点击"标记为已同步"时才记录
 
         if task_id:
             TaskDB.update(task_id, status="pending_manual",

@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from storage.repositories import TaskRepository, OperationLogRepository, CatalogRepository
-from storage.database import CatalogDBv2
+from storage.database import TaskDBv2, CatalogDBv2
 from storage.sync_history import SyncHistory
 from core.database import get_db
 
