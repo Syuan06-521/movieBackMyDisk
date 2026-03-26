@@ -115,39 +115,67 @@
     <el-dialog
       v-model="statusDialogVisible"
       title="任务执行状态"
-      width="500px"
+      width="550px"
       :close-on-click-modal="false"
+      class="task-status-dialog"
+      center
     >
       <div class="task-status">
-        <div class="status-icon">
-          <el-icon v-if="taskStatus.status === 'running'" class="is-loading" :size="40"><Loading /></el-icon>
-          <el-icon v-else-if="taskStatus.status === 'completed'" :size="40" color="#67C23A"><CircleCheck /></el-icon>
-          <el-icon v-else-if="taskStatus.status === 'failed'" :size="40" color="#F56C6C"><CircleClose /></el-icon>
-          <el-icon v-else-if="taskStatus.status === 'stopped'" :size="40" color="#E6A23C"><InfoFilled /></el-icon>
-          <el-icon v-else :size="40"><InfoFilled /></el-icon>
+        <div class="status-icon-wrapper">
+          <div class="status-icon-bg" :class="getStatusBgClass(taskStatus.status)">
+            <el-icon v-if="taskStatus.status === 'running'" class="is-loading" :size="48"><Loading /></el-icon>
+            <el-icon v-else-if="taskStatus.status === 'completed'" :size="48"><CircleCheck /></el-icon>
+            <el-icon v-else-if="taskStatus.status === 'failed'" :size="48"><CircleClose /></el-icon>
+            <el-icon v-else-if="taskStatus.status === 'stopped'" :size="48"><VideoPause /></el-icon>
+            <el-icon v-else :size="48"><InfoFilled /></el-icon>
+          </div>
         </div>
         <div class="status-text">
-          <div class="status-title">{{ getStatusTitle(taskStatus.status) }}</div>
+          <div class="status-title" :class="getStatusTitleClass(taskStatus.status)">{{ getStatusTitle(taskStatus.status) }}</div>
           <div class="status-message">{{ taskStatus.message }}</div>
           <div v-if="taskStatus.error" class="status-error">{{ taskStatus.error }}</div>
         </div>
       </div>
-      <el-progress v-if="taskStatus.status === 'running'" :percentage="taskStatus.progress" :indeterminate="true" />
+
+      <el-progress
+        v-if="taskStatus.status === 'running'"
+        :percentage="taskStatus.progress"
+        :stroke-width="8"
+        :show-text="true"
+        :indeterminate="true"
+        :duration="1"
+      />
 
       <!-- 执行日志 -->
       <div v-if="taskLogs.length > 0" class="task-logs">
-        <div class="log-title">执行日志</div>
+        <div class="log-header">
+          <el-icon><Document /></el-icon>
+          <span>执行日志</span>
+        </div>
         <div class="log-content">
-          <div v-for="(log, index) in taskLogs" :key="index" class="log-line">{{ log }}</div>
+          <div v-for="(log, index) in taskLogs" :key="index" class="log-line">
+            <span class="log-index">{{ index + 1 }}</span>
+            <span class="log-text">{{ log }}</span>
+          </div>
         </div>
       </div>
 
       <template #footer>
-        <el-button v-if="taskStatus.status === 'running' || taskStatus.status === 'queued'" type="danger" @click="handleStopTask" :loading="stopping">
-          <el-icon><VideoPause /></el-icon>
-          停止任务
-        </el-button>
-        <el-button @click="statusDialogVisible = false">关闭</el-button>
+        <div class="dialog-footer">
+          <el-button
+            v-if="taskStatus.status === 'running' || taskStatus.status === 'queued' || taskStatus.status === 'stopping'"
+            type="danger"
+            @click="handleStopTask"
+            :loading="stopping"
+            size="large"
+          >
+            <el-icon><VideoPause /></el-icon>
+            停止任务
+          </el-button>
+          <el-button @click="statusDialogVisible = false" size="large">
+            关闭
+          </el-button>
+        </div>
       </template>
     </el-dialog>
 
@@ -241,11 +269,34 @@ const getStatusTitle = (status) => {
   const titles = {
     queued: '任务排队中',
     running: '任务执行中',
+    stopping: '正在停止任务...',
     completed: '任务已完成',
     failed: '任务失败',
     stopped: '任务已停止'
   }
   return titles[status] || status
+}
+
+const getStatusBgClass = (status) => {
+  const classes = {
+    running: 'icon-bg-running',
+    stopping: 'icon-bg-stopping',
+    completed: 'icon-bg-completed',
+    failed: 'icon-bg-failed',
+    stopped: 'icon-bg-stopped'
+  }
+  return classes[status] || 'icon-bg-default'
+}
+
+const getStatusTitleClass = (status) => {
+  const classes = {
+    running: 'status-title-running',
+    stopping: 'status-title-stopping',
+    completed: 'status-title-completed',
+    failed: 'status-title-failed',
+    stopped: 'status-title-stopped'
+  }
+  return classes[status] || ''
 }
 
 const showRunDialog = () => {
@@ -303,7 +354,7 @@ const pollTaskStatus = async () => {
       taskLogs.value = logsRes.data.logs
     }
 
-    if (status === 'running' || status === 'queued') {
+    if (status === 'running' || status === 'queued' || status === 'stopping') {
       setTimeout(pollTaskStatus, 2000)
     } else if (status === 'completed') {
       // 检查是否是无更新的情况
@@ -317,9 +368,27 @@ const pollTaskStatus = async () => {
       fetchRecentRecords()
     } else if (status === 'failed') {
       ElMessage.error('检查失败：' + (error || '未知错误'))
+    } else if (status === 'stopped') {
+      ElMessage.info('任务已被停止')
     }
   } catch (error) {
     console.error('Failed to poll task status:', error)
+  }
+}
+
+const handleStopTask = async () => {
+  if (!taskId.value) return
+
+  try {
+    stopping.value = true
+    await api.post(`/check/stop/${taskId.value}`)
+    ElMessage.info('已发送停止信号，等待任务完成...')
+    // 继续轮询直到任务状态变为 stopped
+    pollTaskStatus()
+  } catch (error) {
+    ElMessage.error('停止任务失败：' + (error.response?.data?.message || error.message))
+  } finally {
+    stopping.value = false
   }
 }
 
@@ -438,20 +507,100 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.task-status {
+.task-status-dialog .task-status {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px 0;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 30px 0 20px;
 }
 
-.status-icon {
+.task-status-dialog .status-icon-wrapper {
+  flex-shrink: 0;
+}
+
+.task-status-dialog .status-icon-bg {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #fff;
+  transition: all 0.3s ease;
 }
 
-.status-icon .is-loading {
+.task-status-dialog .icon-bg-default {
+  background: linear-gradient(135deg, #909399, #c0c4cc);
+}
+
+.task-status-dialog .icon-bg-running {
+  background: linear-gradient(135deg, #409EFF, #66b1ff);
+  animation: pulse-running 1.5s ease-in-out infinite;
+}
+
+.task-status-dialog .icon-bg-completed {
+  background: linear-gradient(135deg, #67C23A, #85ce61);
+  animation: bounce-in 0.5s ease;
+}
+
+.task-status-dialog .icon-bg-failed {
+  background: linear-gradient(135deg, #F56C6C, #f78989);
+  animation: shake-error 0.5s ease;
+}
+
+.task-status-dialog .icon-bg-stopped {
+  background: linear-gradient(135deg, #E6A23C, #ebb563);
+  animation: bounce-in 0.5s ease;
+}
+
+.task-status-dialog .icon-bg-stopping {
+  background: linear-gradient(135deg, #909399, #a0a5b0);
+  animation: pulse-stopping 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-stopping {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(144, 147, 153, 0.5);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 15px rgba(144, 147, 153, 0);
+  }
+}
+
+@keyframes pulse-running {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(64, 158, 255, 0.5);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 15px rgba(64, 158, 255, 0);
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shake-error {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.task-status-dialog .status-icon .is-loading {
   animation: rotating 2s linear infinite;
 }
 
@@ -464,64 +613,135 @@ onMounted(() => {
   }
 }
 
-.status-text {
+.task-status-dialog .status-text {
   flex: 1;
+  padding-top: 8px;
 }
 
-.status-title {
-  font-size: 16px;
-  font-weight: bold;
-  color: #303133;
-  margin-bottom: 8px;
+.task-status-dialog .status-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  transition: color 0.3s ease;
 }
 
-.status-message {
-  font-size: 14px;
-  color: #606266;
-  margin-bottom: 4px;
+.task-status-dialog .status-title-running {
+  color: #409EFF;
 }
 
-.status-error {
-  font-size: 13px;
+.task-status-dialog .status-title-completed {
+  color: #67C23A;
+}
+
+.task-status-dialog .status-title-failed {
   color: #F56C6C;
-  background: #FEF0F0;
-  padding: 8px 12px;
-  border-radius: 4px;
-  margin-top: 8px;
 }
 
-.task-logs {
-  margin-top: 16px;
-  border: 1px solid #EBEEF5;
-  border-radius: 4px;
-  background: #F5F7FA;
-  max-height: 300px;
-  overflow-y: auto;
+.task-status-dialog .status-title-stopped {
+  color: #E6A23C;
 }
 
-.log-title {
+.task-status-dialog .status-title-stopping {
+  color: #909399;
+}
+
+.task-status-dialog .status-message {
   font-size: 14px;
-  font-weight: bold;
   color: #606266;
-  padding: 8px 12px;
-  border-bottom: 1px solid #EBEEF5;
-  background: #FAFAFA;
-}
-
-.log-content {
-  padding: 8px 12px;
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
+  margin-bottom: 6px;
   line-height: 1.6;
 }
 
-.log-line {
-  color: #303133;
-  border-bottom: 1px dashed #EBEEF5;
-  padding: 4px 0;
+.task-status-dialog .status-error {
+  font-size: 13px;
+  color: #F56C6C;
+  background: linear-gradient(135deg, #FEF0F0, #fff5f5);
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-top: 10px;
+  border-left: 3px solid #F56C6C;
 }
 
-.log-line:last-child {
+.task-status-dialog .el-progress {
+  margin-top: 10px;
+}
+
+.task-status-dialog .task-logs {
+  margin-top: 20px;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fafafa, #f5f7fa);
+  max-height: 300px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.task-status-dialog .log-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #606266;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e4e7ed;
+  background: #fafafa;
+}
+
+.task-status-dialog .log-header .el-icon {
+  color: #909399;
+}
+
+.task-status-dialog .log-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.task-status-dialog .log-line {
+  display: flex;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #ebeef5;
+  animation: slide-in 0.3s ease;
+}
+
+.task-status-dialog .log-line:last-child {
   border-bottom: none;
+}
+
+.task-status-dialog .log-index {
+  flex-shrink: 0;
+  color: #909399;
+  font-weight: 600;
+  user-select: none;
+}
+
+.task-status-dialog .log-text {
+  flex: 1;
+  color: #303133;
+  word-break: break-all;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.task-status-dialog .dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 10px;
 }
 </style>

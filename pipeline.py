@@ -190,7 +190,8 @@ class TransferPipeline:
         db = TaskDBv2()
         try:
             # 只处理 pending 任务，失败任务需要用户手动重试
-            pending_tasks = db.get_all(status='pending')
+            # 使用较大的 limit 值确保获取所有待处理任务
+            pending_tasks = db.get_all(status='pending', limit=10000)
 
             # 按类型过滤
             if content_type:
@@ -214,6 +215,12 @@ class TransferPipeline:
             # 处理每个待处理任务
             stats = {"found": 0, "saved": 0, "skipped": 0, "failed": 0}
             for idx, task_data in enumerate(pending_tasks):
+                # 检查是否被停止
+                if _should_stop():
+                    logger.info("Pipeline stopped by user while processing pending tasks")
+                    _report_progress("stopped", int((idx + 1) / len(pending_tasks) * 100), f"任务已被用户停止 (已处理 {idx}/{len(pending_tasks)})")
+                    break
+
                 task_id = task_data.get('task_id')
                 catalog_item_id = task_data.get('catalog_item_id')
                 addon_name = task_data.get('addon_name')
@@ -286,6 +293,8 @@ class TransferPipeline:
             状态字符串：found/saved/skipped/failed
         """
         from storage.database import CatalogDBv2
+        from stremio.fetcher import StremioFetcher
+        from storage.repositories import TaskRepository, CatalogRepository
 
         db = TaskDBv2()
         catalog_db = CatalogDBv2()
@@ -297,31 +306,122 @@ class TransferPipeline:
                 logger.warning("Task %s not found", task_id)
                 return "failed"
 
-            # 获取 catalog 信息
+            # 获取 catalog 信息（从 catalog_items 表）
             catalog_repo = CatalogRepository(catalog_db.db)
             catalog_item = catalog_repo.get_by_id(task.catalog_item_id, task.addon_name)
-            if not catalog_item:
-                logger.warning("Catalog item %s/%s not found", task.catalog_item_id, task.addon_name)
-                return "skipped"
 
-            # 重建 item 数据结构
-            item = {
-                "id": catalog_item.id,
-                "name": catalog_item.name,
-                "type": catalog_item.item_type,
-                "year": catalog_item.year,
-                "imdbId": catalog_item.imdb_id,
-                "poster": catalog_item.poster,
-                "_task_id": task_id,
-                "_addon": task.addon_name,
-                "_skip_sync_check": True,  # 标记跳过同步历史检查（待处理任务需要重新处理）
-            }
+            # 如果 catalog_items 中没有，说明是待处理/失败任务，需要从 Stremio 重新获取信息
+            if not catalog_item:
+                logger.info("Catalog item %s/%s not in catalog_items, fetching from Stremio...",
+                           task.catalog_item_id, task.addon_name)
+                try:
+                    # 从 Stremio 重新获取影视信息
+                    addon_config = None
+                    for addon in self.config.get("stremio_addons", []):
+                        if addon.get("name") == task.addon_name:
+                            addon_config = addon
+                            break
+
+                    # 如果找不到匹配的 addon，尝试使用所有可用的 addon（处理 addon_name 变更的情况）
+                    item_meta = None
+                    item_type = None
+
+                    if not addon_config:
+                        stremio_addons = self.config.get("stremio_addons", [])
+                        if stremio_addons:
+                            logger.warning("Addon '%s' not found, trying all configured addons as fallback",
+                                          task.addon_name)
+                            # 尝试所有 addon
+                            for idx, fallback_addon in enumerate(stremio_addons):
+                                # 检查是否被停止
+                                if _should_stop():
+                                    logger.info("Pipeline stopped by user while trying fallback addons")
+                                    return "stopped"
+
+                                logger.info("Trying fallback addon %d/%d: %s",
+                                           idx + 1, len(stremio_addons), fallback_addon.get("name"))
+                                try:
+                                    fetcher = StremioFetcher(
+                                        manifest_url=fallback_addon["manifest_url"],
+                                        watch_types=fallback_addon.get("watch_types", []),
+                                        watch_catalogs=fallback_addon.get("watch_catalogs", []),
+                                    )
+                                    for try_type in ['movie', 'series']:
+                                        item_meta = fetcher.fetch_meta(try_type, task.catalog_item_id)
+                                        if item_meta:
+                                            item_type = try_type
+                                            logger.info("Successfully fetched meta using fallback addon: %s",
+                                                       fallback_addon.get("name"))
+                                            break
+                                    if item_meta:
+                                        break
+                                except Exception as e:
+                                    logger.warning("Fallback addon %s failed: %s",
+                                                  fallback_addon.get("name"), e)
+                                    continue
+                            if not item_meta:
+                                logger.warning("All fallback addons failed for %s", task.catalog_item_id)
+                                return "skipped"
+                        else:
+                            logger.warning("No addon configuration found for task %s", task_id)
+                            return "skipped"
+                    else:
+                        # 使用匹配的 addon 配置
+                        fetcher = StremioFetcher(
+                            manifest_url=addon_config["manifest_url"],
+                            watch_types=addon_config.get("watch_types", []),
+                            watch_catalogs=addon_config.get("watch_catalogs", []),
+                        )
+                        # 尝试两种类型（movie 和 series）
+                        for try_type in ['movie', 'series']:
+                            # 检查是否被停止
+                            if _should_stop():
+                                logger.info("Pipeline stopped by user while fetching meta")
+                                return "stopped"
+
+                            item_meta = fetcher.fetch_meta(try_type, task.catalog_item_id)
+                            if item_meta:
+                                item_type = try_type
+                                break
+
+                    if not item_meta:
+                        logger.warning("Failed to fetch item meta for %s", task.catalog_item_id)
+                        return "skipped"
+
+                    # 重建 item 数据结构
+                    item = {
+                        "id": item_meta.get("id", task.catalog_item_id),
+                        "name": item_meta.get("name", ""),
+                        "type": item_meta.get("type", item_type),
+                        "year": item_meta.get("year"),
+                        "imdbId": item_meta.get("imdbId"),
+                        "poster": item_meta.get("poster"),
+                        "_task_id": task_id,
+                        "_addon": task.addon_name,
+                        "_skip_sync_check": True,
+                    }
+                    logger.info("Fetched item meta from Stremio: %s (%s)", item["name"], item_type)
+                except Exception as e:
+                    logger.error("Failed to fetch item meta from Stremio: %s", e)
+                    return "failed"
+            else:
+                # 重建 item 数据结构（从 catalog_items 获取）
+                item = {
+                    "id": catalog_item.id,
+                    "name": catalog_item.name,
+                    "type": catalog_item.item_type,
+                    "year": catalog_item.year,
+                    "imdbId": catalog_item.imdb_id,
+                    "poster": catalog_item.poster,
+                    "_task_id": task_id,
+                    "_addon": task.addon_name,
+                    "_skip_sync_check": True,  # 标记跳过同步历史检查（待处理任务需要重新处理）
+                }
 
             # 调用 _process_item 处理
             return self._process_item(item)
         finally:
             db.close()
-            catalog_db.close()
             catalog_db.close()
 
     def _discover_new_items(self) -> List[Dict]:

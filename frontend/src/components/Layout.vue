@@ -89,7 +89,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
@@ -122,6 +122,17 @@ const handleCommand = async (command) => {
     }
   }
 }
+
+// 组件挂载时获取当前用户信息
+onMounted(async () => {
+  if (authStore.isAuthenticated && !authStore.user) {
+    try {
+      await authStore.fetchCurrentUser()
+    } catch (error) {
+      console.error('Failed to fetch current user:', error)
+    }
+  }
+})
 </script>
 
 <style scoped>
