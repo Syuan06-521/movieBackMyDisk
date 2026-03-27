@@ -73,6 +73,10 @@ class TransferPipeline:
         self.quark_config: Dict = config.get("quark", {})
         self.filter_config: Dict = config.get("filter", {})
         self.site_config: Dict = config.get("search_sites", {})
+        # 记录通知配置用于调试
+        notif_conf = config.get("notification", {})
+        logger.info("Notification config: enabled=%s, type=%s",
+                    notif_conf.get("enabled"), notif_conf.get("type"))
 
         # 支持多路径配置 (兼容旧的 save_folder 单一路径)
         save_folders = self.quark_config.get("save_folders", [])
@@ -101,12 +105,16 @@ class TransferPipeline:
         logger.info("Pipeline run started (mode: %s)", self.mode)
         logger.info("Save folders configured: %s", self.save_folders)
 
+        # 任务启动通知
+        self._notify("小兔纸: 任务开始执行")
+
         # Step 0: 先处理数据库中已有的 pending 任务
         pending_tasks_processed = self._process_pending_tasks(content_type)
 
         # 检查是否被停止
         if _should_stop():
             logger.info("Pipeline stopped by user after processing pending tasks")
+            self._notify("小兔纸: 任务已被用户停止")
             _report_progress("stopped", 0, "任务已被用户停止")
             return
 
@@ -122,6 +130,7 @@ class TransferPipeline:
                 # 检查是否被停止
                 if _should_stop():
                     logger.info("Pipeline stopped by user while processing items")
+                    self._notify(f"小兔纸: 任务已被用户停止 (已处理 {idx}/{len(new_items)})")
                     _report_progress("stopped", int((idx + 1) / len(new_items) * 100), f"任务已被用户停止 (已处理 {idx}/{len(new_items)})")
                     break
 
@@ -154,27 +163,26 @@ class TransferPipeline:
                     stats["found"], stats["saved"], stats["skipped"], stats["failed"]
                 )
 
-                # 通知
+                # 通知 - 无论是否保存成功都发送完成通知
                 if stats["saved"] > 0:
-                    self._notify(f"filmTransfer: 本次新保存 {stats['saved']} 个资源")
-                    _report_progress(
-                        "completed",
-                        100,
-                        f"新发现影视处理完成 - 共{len(new_items)}个，成功{stats['saved']}个，跳过{stats['skipped']}个，失败{stats['failed']}个"
-                    )
+                    self._notify(f"小兔纸: 本次新保存 {stats['saved']} 个资源")
                 else:
-                    _report_progress(
-                        "completed",
-                        100,
-                        f"新发现影视处理完成 - 共{len(new_items)}个，成功{stats['saved']}个，跳过{stats['skipped']}个，失败{stats['failed']}个"
-                    )
+                    self._notify(f"小兔纸: 任务执行完成，本次无新保存资源")
+
+                _report_progress(
+                    "completed",
+                    100,
+                    f"新发现影视处理完成 - 共{len(new_items)}个，成功{stats['saved']}个，跳过{stats['skipped']}个，失败{stats['failed']}个"
+                )
 
         # 汇总结果
         if pending_tasks_processed == 0 and not new_items:
             logger.info("本次检查无更新内容（无待处理任务，无新发现影视）")
+            self._notify("小兔纸: 本次检查无更新内容")
             _report_progress("completed", 100, "本次检查无更新内容")
         elif pending_tasks_processed > 0 and not new_items:
             # 只处理了 pending 任务，没有新发现
+            self._notify(f"小兔纸: 处理了 {pending_tasks_processed} 个待处理任务")
             pass  # 已在 _process_pending_tasks 中报告完成
 
     def _process_pending_tasks(self, content_type: str = None) -> int:
@@ -760,8 +768,10 @@ class TransferPipeline:
         """发送通知（根据配置）"""
         notif_conf = self.config.get("notification", {})
         if not notif_conf.get("enabled", False):
+            logger.debug("Notification not enabled, skipping")
             return
         notif_type = notif_conf.get("type", "")
+        logger.info("Sending notification: type=%s, msg=%s", notif_type, msg)
         try:
             if notif_type == "bark":
                 self._notify_bark(msg, notif_conf.get("bark_key", ""))
@@ -771,21 +781,30 @@ class TransferPipeline:
                     notif_conf.get("telegram_bot_token", ""),
                     notif_conf.get("telegram_chat_id", ""),
                 )
+            else:
+                logger.warning("Unknown notification type: %s", notif_type)
         except Exception as e:
-            logger.warning("Notification failed: %s", e)
+            logger.warning("Notification failed: %s", e, exc_info=True)
 
     def _notify_bark(self, msg: str, key: str):
         import httpx
         if not key:
+            logger.warning("Bark key not configured")
             return
         url = f"https://api.day.app/{key}/{msg}"
-        httpx.get(url, timeout=10)
-        logger.info("Bark notification sent")
+        logger.info("Sending Bark notification to %s...", url[:50] + "..." if len(url) > 50 else url)
+        resp = httpx.get(url, timeout=10)
+        logger.info("Bark notification sent, response: %s", resp.status_code)
 
     def _notify_telegram(self, msg: str, token: str, chat_id: str):
         import httpx
-        if not token or not chat_id:
+        if not token:
+            logger.warning("Telegram bot token not configured")
+            return
+        if not chat_id:
+            logger.warning("Telegram chat ID not configured")
             return
         url = f"https://api.telegram.org/bot{token}/sendMessage"
-        httpx.post(url, json={"chat_id": chat_id, "text": msg}, timeout=10)
-        logger.info("Telegram notification sent")
+        logger.info("Sending Telegram notification to chat %s...", chat_id)
+        resp = httpx.post(url, json={"chat_id": chat_id, "text": msg}, timeout=10)
+        logger.info("Telegram notification sent, response: %s, body: %s", resp.status_code, resp.text)

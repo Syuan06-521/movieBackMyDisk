@@ -20,9 +20,9 @@ CONFIG_FILE = BASE_DIR / "config.yaml"
 class MySQLSettings:
     """MySQL 数据库配置"""
     host: str = os.getenv("MYSQL_HOST", "localhost")
-    port: int = int(os.getenv("MYSQL_PORT", "3307"))
+    port: int = int(os.getenv("MYSQL_PORT", "3306"))
     user: str = os.getenv("MYSQL_USER", "root")
-    password: str = os.getenv("MYSQL_PASSWORD", "Mysql123!")
+    password: str = os.getenv("MYSQL_PASSWORD", "123456")
     database: str = os.getenv("MYSQL_DATABASE", "film_transfer")
 
     @property

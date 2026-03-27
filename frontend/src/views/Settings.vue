@@ -99,9 +99,14 @@
       <template #header>
         <div class="card-header">
           <span><el-icon><Bell /></el-icon> 通知设置</span>
-          <el-button type="primary" size="small" @click="saveNotificationSettings">
-                保存
-              </el-button>
+          <div>
+            <el-button type="success" size="small" @click="testNotification" :disabled="!notificationSettings.enabled">
+              测试通知
+            </el-button>
+            <el-button type="primary" size="small" @click="saveNotificationSettings">
+              保存
+            </el-button>
+          </div>
         </div>
       </template>
 
@@ -168,9 +173,10 @@ const notificationSettings = reactive({
 
 const fetchSettings = async () => {
   try {
-    const [quarkRes, filterRes] = await Promise.all([
+    const [quarkRes, filterRes, notificationRes] = await Promise.all([
       api.get('/settings/quark'),
-      api.get('/settings/filter')
+      api.get('/settings/filter'),
+      api.get('/settings/notification')
     ])
 
     if (quarkRes.data.settings) {
@@ -178,6 +184,15 @@ const fetchSettings = async () => {
     }
     if (filterRes.data.settings) {
       Object.assign(filterSettings, filterRes.data.settings)
+    }
+    if (notificationRes.data.settings) {
+      const s = notificationRes.data.settings
+      // 显式赋值确保响应式更新
+      notificationSettings.enabled = !!s.enabled
+      notificationSettings.type = s.type || 'bark'
+      notificationSettings.bark_key = s.bark_key || ''
+      notificationSettings.telegram_bot_token = s.telegram_bot_token || ''
+      notificationSettings.telegram_chat_id = s.telegram_chat_id || ''
     }
   } catch (error) {
     console.error('Failed to fetch settings:', error)
@@ -208,6 +223,15 @@ const saveNotificationSettings = async () => {
     ElMessage.success('通知设置已保存')
   } catch (error) {
     ElMessage.error('保存失败')
+  }
+}
+
+const testNotification = async () => {
+  try {
+    await api.post('/settings/notification/test')
+    ElMessage.success('测试通知已发送，请查收')
+  } catch (error) {
+    ElMessage.error(error.response?.data?.message || '发送测试通知失败')
   }
 }
 

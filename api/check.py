@@ -107,14 +107,66 @@ def run_check():
                 task_logs[task_id] = ['任务已启动']
                 task_stop_flags[task_id] = False  # 初始化停止标志
 
+                # 从数据库读取设置
+                from storage.repositories import SettingRepository
+                from core.database import get_db as get_db_sync
+
+                db_settings = next(get_db_sync())
+                repo = SettingRepository(db_settings)
+                try:
+                    # 构建通知配置
+                    notification_enabled = repo.get_value('notification_enabled', False)
+                    notification_config = {
+                        'enabled': notification_enabled,
+                        'type': repo.get_value('notification_type', 'bark'),
+                        'bark_key': repo.get_value('notification_bark_key', ''),
+                        'telegram_bot_token': repo.get_value('notification_telegram_bot_token', ''),
+                        'telegram_chat_id': repo.get_value('notification_telegram_chat_id', ''),
+                    }
+                    logger.info("Loaded notification config from DB: enabled=%s, type=%s",
+                                notification_enabled, notification_config.get('type'))
+
+                    # 构建过滤配置（从数据库读取，覆盖 yaml）
+                    filter_config = settings.filter.copy()
+                    preferred_resolutions = repo.get_value('preferred_resolutions', [])
+                    if preferred_resolutions:
+                        filter_config['preferred_resolutions'] = preferred_resolutions
+                    min_resolution = repo.get_value('min_resolution')
+                    if min_resolution:
+                        filter_config['min_resolution'] = min_resolution
+                    min_size_gb = repo.get_value('min_size_gb')
+                    if min_size_gb is not None:
+                        filter_config['min_size_gb'] = float(min_size_gb) if isinstance(min_size_gb, str) else min_size_gb
+                    max_size_gb = repo.get_value('max_size_gb')
+                    if max_size_gb is not None:
+                        filter_config['max_size_gb'] = float(max_size_gb) if isinstance(max_size_gb, str) else max_size_gb
+                    preferred_codecs = repo.get_value('preferred_codecs', [])
+                    if preferred_codecs:
+                        filter_config['preferred_codecs'] = preferred_codecs
+
+                    # 构建夸克配置（从数据库读取，覆盖 yaml）
+                    quark_config = settings.quark.copy()
+                    quark_cookie = repo.get_value('quark_cookie')
+                    if quark_cookie:
+                        quark_config['cookie'] = quark_cookie
+                    save_folders = repo.get_value('save_folders')
+                    if save_folders:
+                        quark_config['save_folders'] = save_folders
+                    auto_create_folder = repo.get_value('auto_create_folder')
+                    if auto_create_folder is not None:
+                        quark_config['auto_create_folder'] = auto_create_folder
+                finally:
+                    db_settings.close()
+
                 # 构建配置
                 config = {
                     'mode': mode,
-                    'quark': settings.quark,
-                    'filter': settings.filter,
+                    'quark': quark_config,
+                    'filter': filter_config,
                     'search_sites': settings.search_sites,
                     'stremio_addons': settings.stremio_addons,
                     'logging': settings.logging,
+                    'notification': notification_config,
                 }
 
                 # 如果指定了内容类型，过滤 addon
