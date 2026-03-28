@@ -8,9 +8,9 @@ echo "========================================"
 
 # MySQL 配置
 MYSQL_HOST="localhost"
-MYSQL_PORT="3307"
+MYSQL_PORT="3306"
 MYSQL_USER="root"
-MYSQL_PASSWORD="Mysql123!"
+MYSQL_PASSWORD="123456"
 MYSQL_DATABASE="film_transfer"
 
 # 检查 MySQL 连接

@@ -8,9 +8,9 @@ echo ========================================
 
 REM MySQL 配置
 set MYSQL_HOST=localhost
-set MYSQL_PORT=3307
+set MYSQL_PORT=3306
 set MYSQL_USER=root
-set MYSQL_PASSWORD=Mysql123!
+set MYSQL_PASSWORD=123456
 set MYSQL_DATABASE=film_transfer
 set MYSQL_BIN=mysql
 
