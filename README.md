@@ -174,3 +174,5 @@ python main.py search "关键词"   # 测试资源搜索
 ## 许可证
 
 MIT License
+
+本地电脑中.ssh目录若存在中文名称，git可能不正常工作，可以在git bash中执行：ssh -i ~/.ssh/id_rsa -T git@github.com，再提交代码
