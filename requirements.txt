@@ -18,6 +18,7 @@ aiofiles>=23.2.1
 # MySQL 数据库
 pymysql>=1.1.0
 sqlalchemy>=2.0.0
+cryptography>=41.0.0
 
 # Flask 后端
 flask>=3.0.0
